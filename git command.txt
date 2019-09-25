@@ -1,0 +1,11 @@
+
+Create new repo in Github web without README,
+Go to the big folder containing four small folders & open bash,
+The first set of git commands, used for pushing the four folders into repo:
+
+git init
+git add *
+git commit -m "First commit, add ex1 to ex4"
+git remote add origin git@github.com:liyi201809/Machine_Learning_Coursera.git
+git push -u origin master  
+
