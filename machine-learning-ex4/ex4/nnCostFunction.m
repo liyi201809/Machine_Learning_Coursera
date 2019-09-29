@@ -12,7 +12,6 @@ function [J grad] = nnCostFunction(nn_params, ...
 % 
 %   The returned parameter grad should be a "unrolled" vector of the
 %   partial derivatives of the neural network.
-%
 
 % Reshape nn_params back into the parameters Theta1 and Theta2, the weight matrices
 % for our 2 layer neural network
@@ -61,36 +60,53 @@ Theta2_grad = zeros(size(Theta2));
 %               the regularization separately and then add them to Theta1_grad
 %               and Theta2_grad from Part 2.
 %
-a1 = [ones(m, 1) X];
-z2 = a1 * Theta1';
-a2 = sigmoid(z2);
-a2 = [ones(m, 1) a2];
-z3 = a2 * Theta2';
-htheta = sigmoid(z3);
+a1 = [ones(m, 1) X];  % 5000X401
+z2 = a1 * Theta1';    % 5000X25
+a2 = sigmoid(z2);     % 
+a2 = [ones(m, 1) a2]; % 5000X26
+z3 = a2 * Theta2';    % 5000X10
+htheta = sigmoid(z3); %
 
+% Part 1: method 1, matrices muplication
 for k = 1:num_labels
-    yk = y == k;  %first logical then multiply, y is 1~9 and 5000x1, if y=k, then yk=1. 
-    hthetak = htheta(:, k);  %htheta is 5000x10 matrics
+    yk = (y == k);  % y is 1~9 and 5000x1 ---> yk is 0/1, 5000x1 
+    hthetak = htheta(:, k);  %htheta is 5000x10 matrics, hthetak, 5000x1
     Jk = 1 / m * sum(-yk .* log(hthetak) - (1 - yk) .* log(1 - hthetak));
     J = J + Jk;
 end
 
+% %Part 1: method 2, no matrices muplication
+% for i=1:m
+%     JKK = 0;
+%     for k = 1:num_labels
+%         yk = (y(i)==k);
+%         hthetak = htheta(i, k);
+%         Jk =  (yk * log(hthetak)) + ((1 - yk) * log(1 - hthetak));
+%         JKK = JKK + Jk;
+%     end
+%     J = J + JKK;
+% end
+% J= -1 *J / m;
+
+
 regularization = lambda / (2 * m) * (sum(sum(Theta1(:, 2:end) .^ 2)) + sum(sum(Theta2(:, 2:end) .^ 2)));
+% theta 1/2 with bias, need to be removed.
 J = J + regularization;
 
 
+% Part 2+3: Implement the backpropagation algorithm + regularization
 for t = 1:m
     for k = 1:num_labels
         yk = y(t) == k;
-        delta_3(k) = htheta(t, k) - yk;
+        delta_3(k) = htheta(t, k) - yk;  % 1x1 for 10 times >> 1x10
     end
-    delta_2 = Theta2' * delta_3' .* sigmoidGradient([1, z2(t, :)])';
-    delta_2 = delta_2(2:end);
+    delta_2 = Theta2' * delta_3' .* sigmoidGradient([1, z2(t, :)])';  % 26x10 * 10x1 .* (25+1)x1
+    delta_2 = delta_2(2:end); % 25x1
 
-    Theta1_grad = Theta1_grad + delta_2 * a1(t, :);
-    Theta2_grad = Theta2_grad + delta_3' * a2(t, :);
+    Theta1_grad = Theta1_grad + delta_2 * a1(t, :);  % 25x1 * 1x401 >> 25x401
+    Theta2_grad = Theta2_grad + delta_3' * a2(t, :); % 10x1 * 1x26  >> 10x26
+    % accumulate 25x401 and 10x26 for m times, then divide m outside the loop
 end
-
 Theta1_grad = Theta1_grad / m;
 Theta2_grad = Theta2_grad / m;
 
@@ -98,12 +114,7 @@ Theta2_grad = Theta2_grad / m;
 Theta1_grad(:, 2:end) = Theta1_grad(:, 2:end) + lambda / m * Theta1(:, 2:end);
 Theta2_grad(:, 2:end) = Theta2_grad(:, 2:end) + lambda / m * Theta2(:, 2:end);
 
-% -------------------------------------------------------------
-
-% =========================================================================
-
 % Unroll gradients
 grad = [Theta1_grad(:) ; Theta2_grad(:)];
-
 
 end
