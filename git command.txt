@@ -1,7 +1,6 @@
 
 Create new repo in Github web without README,
-Go to the big folder containing four small folders & open bash,
-The first set of git commands, used for pushing the four folders into repo:
+Go to the parents folder containing four small project folders & open git bash.
 
 git init
 git add *
